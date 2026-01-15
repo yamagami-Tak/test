@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>地球温暖化メーター</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .slider-container { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+<h2>🌍 地球温暖化メーター</h2>
+<div class="slider-container">
+<label for="units">クーラー台数（最大3000万台）: <span id="unitsValue">100</span></label>
+<input id="units" max="30000000" min="0" step="1000" type="range" value="100"/>
+</div>
+<div class="slider-container">
+<label for="hours">使用時間（1〜24時間）: <span id="hoursValue">8</span></label>
+<input id="hours" max="24" min="1" type="range" value="8"/>
+</div>
+<div class="slider-container">
+<label for="temperature">設定温度（20〜30℃）: <span id="temperatureValue">24</span></label>
+<input id="temperature" max="30" min="20" type="range" value="24"/>
+</div>
+<p>1日CO₂排出量: <span id="co2Output">0</span> kg</p>
+<p>100日気温上昇: <span id="tempRise">0</span> ℃</p>
+<canvas height="400" id="tempChart" width="800"></canvas>
+<p>10年で: <span id="totaltempRise">0</span> ℃</p>
+
+<!--↓この中が重要！！！！！！！！！！！！！！！！！！！！！-->
+
+<script>
+        <!--↓エアコン台数で入力された値を○○Sliderという変数に格納-->
+        const unitsSlider = document.getElementById("units");
+        <!--↓使用時間で入力された値を○○Sliderという変数に格納-->
+        const hoursSlider = document.getElementById("hours");
+        <!--↓設定温度で入力された値を○○Sliderという変数に格納-->
+        const tempSlider = document.getElementById("temperature");
+
+        const unitsValue = document.getElementById("unitsValue");
+        const hoursValue = document.getElementById("hoursValue");
+        const temperatureValue = document.getElementById("temperatureValue");
+
+        const co2Output = document.getElementById("co2Output");
+        const tempRise = document.getElementById("tempRise");
+
+        const ctx = document.getElementById("tempChart").getContext("2d");
+        
+        const totaltempRise = document.getElementById("totaltempRise");
+        <!--↓グラフ描写の詳細設定-->
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+            <!--横軸の値の最大値-->
+                labels: Array.from({length: 100}, (_, i) => `day ${i+1}`),
+                datasets: [{
+                    label: '気温上昇（℃）',
+                    data: Array(24).fill(0),
+                    borderColor: 'red',
+                    fill: true
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                        <!--縦軸の間隔幅-->
+                            stepSize: 0.5
+                        },
+                        title: {
+                            display: true,
+                            text: '気温上昇（℃）'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '日数（d）'
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateValues() {
+            const units = parseInt(unitsSlider.value);
+            const hours = parseInt(hoursSlider.value);
+            const temperature = parseInt(tempSlider.value);
+
+            unitsValue.textContent = units;
+            hoursValue.textContent = hours;
+            temperatureValue.textContent = temperature;
+            
+            <!--↓エアコン設定温度ごとの影響度-->
+            const powerTable = {
+                20: 1.15, 21: 1.05, 22: 0.95, 23: 0.85, 24: 0.75,
+                25: 0.65, 26: 0.55, 27: 0.45, 28: 0.35, 29: 0.30, 30: 0.25
+            };
+            <!--定数の定義-->
+            const powerPerUnit = powerTable[temperature] || 0.75;
+            const emissionFactor = 0.421;
+            const tcre = 1.65 / 1e12;
+            
+            <!--1時間あたりにCO2排出量-->
+            const hourlyCO2 = units * powerPerUnit * emissionFactor;
+            <!--1時間あたりに気温上昇量-->
+            const hourlyTempRise = hourlyCO2 * tcre;
+
+            
+            <!--合計CO2排出量-->
+            const co2Total = hourlyCO2 * hours;
+            <!--合計気温上昇量-->
+            const tempTotal = hourlyTempRise * hours * 100;
+            const finaltempRise = hourlyTempRise * hours * 100 * 36.5;
+
+            co2Output.textContent = co2Total.toFixed(2);
+            tempRise.textContent = tempTotal.toFixed(3);
+            totaltempRise.textContent = finaltempRise.toFixed(3);
+
+const imgElement = document.getElementById("warningImage");
+
+if (finaltempRise < 0.5) { imgElement.src = "image_safe.png"; file:///C:/Users/otaroharada0829/Downloads/Designer%20(2).png} 
+else if (finaltempRise < 1.0) { imgElement.src = "image_warning.png"; file:///C:/Users/otaroharada0829/Downloads/Gemini_Generated_Image_4z6iru4z6iru4z6i.png} 
+else if (finaltempRise < 1.5){ imgElement.src = "image_danger.png"; file:///C:/Users/otaroharada0829/Downloads/Gemini_Generated_Image_n15xaln15xaln15x.png}
+else { imgElement.src = "image_extremely danger.png"; file:///C:/Users/otaroharada0829/Downloads/Gemini_Generated_Image_2ousa82ousa82ous.png}
+
+chart.data.datasets[0].data = Array.from({length: 100}, (_, i) => {
+    return (hourlyTempRise * hours * (i + 1));	
+});
+
+            chart.update();
+        }
+
+        unitsSlider.oninput = updateValues;
+        hoursSlider.oninput = updateValues;
+        tempSlider.oninput = updateValues;
+
+        updateValues();
+    </script>
+   
+</body>
+</html>
